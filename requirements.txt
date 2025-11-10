@@ -1,9 +1,27 @@
-dotenv
+# Core
+python-dotenv
 streamlit
-langgraph
+
+# LangChain / LangGraph
+langchain
+langchain-core
 langchain-community
+langgraph
+langchain-ollama
+
+# Search tools
 duckduckgo-search
+
+# LLM Clients
+openai
 langchain-openai
+
+# Utils
 markdownify
 requests
+
+# Notion
+notion-client
+
+# Testing
 pytest
