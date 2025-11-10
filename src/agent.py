@@ -6,6 +6,8 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from tools.visit_website import visit_website
 from tools.notion_tool import save_to_notion
+import json
+import re
 
 load_dotenv()
 
@@ -18,51 +20,47 @@ search = DuckDuckGoSearchResults()
 memory = MemorySaver()
 tools = [search, visit_website, save_to_notion]
 
-agent = create_react_agent(
-    model, 
-    tools, 
-    checkpointer=memory
-    )
+agent = create_react_agent(model, tools, checkpointer=memory)
 
 config = {"configurable": {"thread_id": "123abc"}}
 
-
-        
 def call_agent(query: str):
-    response = agent.invoke({"messages": HumanMessage(content=query)}, config)
+    # Enhanced query with clear instructions
+    enhanced_query = f"""{query}
 
+CRITICAL INSTRUCTIONS:
+1. First use duckduckgo_results_json to search
+2. Extract REAL URLs from the 'link' field in results
+3. Visit those EXACT URLs with visit_website (don't make up URLs)
+4. Extract content from websites
+5. Save everything to Notion with save_to_notion"""
+    
+    response = agent.invoke({"messages": HumanMessage(content=enhanced_query)}, config)
     
     for message in response["messages"]:
         print(f"\n=========={message.type}===========")
         print(message.content, "\n")
 
-        # Eğer message bir tool çağrısı içeriyorsa
         if hasattr(message, "tool_calls") and message.tool_calls:
             for call in message.tool_calls:
                 print("==========tool_call===========")
                 print(f"Tool Name: {call.get('name')}")
                 print(f"Args: {call.get('args')}")
                 print(f"Type: {call.get('type')}\n")
-
         
         if hasattr(message, "metadata") and message.metadata:
             print("Metadata:", message.metadata, "\n")
-
     
     answer = response["messages"][-1].content
-
-    title_prompt = f"Generate a short and descriptive title (max 6 words) for this question:\n\n{query}"
+    
+    # Generate title
+    title_prompt = f"Generate a short title (max 6 words) for: {query}"
     title_response = model.invoke([HumanMessage(content=title_prompt)])
     title = title_response.content.strip().replace('"', '')
     
+    # Save to Notion
     notion_result = save_to_notion.func(title=title, query=query, answer=answer)
     print("==========notion_result===========")
     print(notion_result, "\n")
 
     return answer
-
-
-
-        
-        
-    
