@@ -1,108 +1,165 @@
-# AI Agent with LangGraph and Streamlit
+
+# AI Agent with LangGraph, Streamlit & Notion Integration
 
 ## Overview
-This project demonstrates a web-based AI Agent built using the **LangGraph** framework and **Streamlit**. The agent can perform web searches, visit websites, and analyze content using **GPT-4o-mini**. It implements **ReAct reasoning**, combining thought, actions, and tools for complex problem solving.
 
-The project is structured with a **`tools/` directory**, which contains custom tools like `visit_website.py`. This modular design allows the agent to easily integrate additional tools in the future without modifying the core agent logic. For example, new tools for data scraping, API access, or custom analytics can simply be added to the `tools/` folder and included in the agent’s configuration.
+This project demonstrates a **local, privacy-first AI Agent** powered by **Ollama**, orchestrated via **LangGraph**, and deployed with a **Streamlit** interface.  
 
-This approach ensures the project remains **extensible and maintainable**, supporting future enhancements or experimentation with new capabilities without major refactoring.
+The agent follows the **ReAct (Reasoning + Acting)** paradigm — it reasons step by step, chooses tools, performs actions (like searching the web or saving to Notion), and then responds intelligently.
 
+The system is extended with a **Notion integration**, allowing the agent to **automatically save results, summaries, or structured knowledge directly into your Notion workspace** — bridging AI reasoning with long-term knowledge storage.
 
-## Features
-- Interactive **Streamlit** frontend for user queries
-- **DuckDuckGo** search integration
-- Custom tool to visit websites and extract markdown content
-- ReAct-style reasoning using **GPT-4o-mini**
-- Memory persistence with **MemorySaver** checkpointing
-- Unit testing for agent and app behavior
+This architecture combines:
+- **Ollama** for local LLM inference  
+- **LangGraph** for multi-step reasoning  
+- **Streamlit** for a modern interactive UI  
+- **Notion API** for persistent knowledge saving  
+
+---
+
+## Key Features
+
+- **Local LLM via Ollama** — Runs completely offline, no API costs.  
+- **LangGraph ReAct Agent** — Combines reasoning with tool-based actions.  
+- **DuckDuckGo Search Tool** — Fetches up-to-date web content.  
+- **Website Visitor Tool** — Visits and extracts structured content.  
+- **Notion Integration** — Saves query–answer pairs into a Notion database.  
+- **Memory Persistence** — Uses LangGraph `MemorySaver` for checkpointing.  
+- **Extensible Tool Design** — Plug new tools easily (e.g., PDF reader, API fetcher).  
+- **Unit Testing Ready** — Testable with `pytest`.
+
+---
 
 ## Project Structure
 
 ```plaintext
 AI_Agent_with_Langchain_Streamlit/
 │
-├── app.py → Streamlit frontend
-├── agent.py → Agent configuration and tool integration
-├── tools/
-│   └── visit_website.py → Custom website visit tool
+├── src/
+│   ├── app.py              → Streamlit UI and input/output flow
+│   ├── agent.py            → Agent logic and Ollama model configuration
+│   └── tools/
+│       ├── visit_website.py → Website analysis tool
+│       ├── search_tool.py   → Web search via DuckDuckGo
+│       └── notion_tool.py   → Save generated results to Notion
+│
 ├── tests/
-│   ├── test_agent.py → Unit tests for agent logic
-│   └── test_app.py → Unit tests for Streamlit app integration
-└── requirements.txt → Python dependencies
+│   ├── test_agent.py       → Unit tests for reasoning pipeline
+│   └── test_app.py         → Streamlit integration tests
+│
+├── requirements.txt        → Dependencies list
+└── README.md               → Project documentation
 ```
 
 ## Installation
-
-1. **Clone the repository**
-
+1️⃣ **Clone the repository**
 ```bash
-git clone <repository_url>
+git clone https://github.com/SelahattinNazli/AI_Agent_with_Langchain_Streamlit.git
 cd AI_Agent_with_Langchain_Streamlit
 ```
-
-## Create and activate a virtual environment
-
+2️⃣ **Create and activate a virtual environment**
 ```bash
 python3 -m venv venv
 source venv/bin/activate      # macOS/Linux
 venv\Scripts\activate         # Windows
 ```
-
-## Install dependencies
-
+3️⃣ **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
-
-## Set your OpenAI API key
-
+4️⃣ **Install Ollama (if not already)**
 ```bash
-export OPENAI_API_KEY="your_api_key_here"   # macOS/Linux
-setx OPENAI_API_KEY "your_api_key_here"     # Windows
+Follow official setup: https://ollama.ai/download
+
+Then pull the model you want to use (e.g. GPT-4o-mini):
+
+ollama pull gpt-4o-mini
+```
+5️⃣ **Configure Notion (optional)**
+Create a .env file in your project root:
+```bash
+NOTION_API_KEY=your_notion_integration_token
+NOTION_DATABASE_ID=your_database_id
+```
+**Run the App**
+```bash
+streamlit run src/app.py
 ```
 
-## Run the Streamlit app
+The app will open automatically at:
+👉 http://localhost:8501
 
+**Example Usage**
+
+User:
+
+Research the MLOps trends in 2024 and save them to Notion.
+
+Agent:
+
+🧠 Thinking...
+🔍 Searching the web for “MLOps trends 2024”
+📄 Analyzing sources
+💾 ✅ Successfully saved the summarized insights to Notion!
+
+🔗 Notion Integration (New Feature)
+
+Your AI agent can now act as a knowledge collector — every meaningful answer, summary, or insight can be automatically stored in Notion.
+
+Setup Steps
+
+Go to https://www.notion.so/my-integrations
+
+Create an integration → copy the token
+
+Share your database with that integration
+
+Copy your Database ID
+
+Add both values to .env
+
+That’s it — the agent can now log insights in your Notion workspace.
+
+## Testing
+
+Run all tests:
 ```bash
-streamlit run app.py
+pytest -v
 ```
 
-## Example Usage
-
-Ask the agent anything in the chat interface:
-
-User: "Find recent AI news"
-Assistant: "Here are the top results from DuckDuckGo..."
-
-
-Screenshots or GIFs of the interaction can be added here for better visualization.
-
-## Unit Testing
-
-Tests are provided for both the agent logic and Streamlit app using pytest and unittest.mock for safe API testing without a real OpenAI key.
-
-## Run tests
-
+Run only agent tests:
 ```bash
-PYTHONPATH=src pytest tests/ -v
+PYTHONPATH=src pytest tests/test_agent.py -v
 ```
+## Tech Stack
+Component	Purpose
 
-## Test Coverage
+Ollama	Local LLM hosting and inference
 
-test_agent.py: Validates call_agent function with responses.
+LangGraph	Agent reasoning orchestration
 
-test_app.py: Ensures the Streamlit app correctly calls call_agent with responses.
+Streamlit	Interactive web interface
 
-## Dependencies
+DuckDuckGo Search	Retrieve live web data
 
-Python 3.12+
+Markdownify	Convert HTML into clean markdown
 
-Streamlit
+Notion SDK	Connect and save insights to Notion
 
-LangGraph & LangChain
+## Vision
 
-OpenAI Python SDK
+This project goes beyond Q&A — it represents a new generation of self-hosted AI assistants capable of:
 
-DuckDuckGo Search (ddgs)
+Understanding context
 
-python-doten
+Taking structured actions
+
+Interfacing with real-world APIs and tools
+
+Storing knowledge persistently
+
+With Ollama + LangGraph + Notion, you have a foundation for autonomous, private, and extensible AI workflows.
+
+## License
+
+MIT License © 2025 Selahattin Nazlı
